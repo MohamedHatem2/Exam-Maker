@@ -1,0 +1,134 @@
+{
+  "name": "get-exam",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "get-exam",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -160,
+        -240
+      ],
+      "id": "30169d63-5d2b-4550-acf0-66b6696aee4f",
+      "name": "Webhook",
+      "webhookId": "14bfeb51-af66-4dfb-af27-06616fcaf5c9"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1AbhQinJ7x1GA9daHGF9RZrwUETluhJxki6zyqBLBJQ8",
+          "mode": "list",
+          "cachedResultName": "Exam Maker Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AbhQinJ7x1GA9daHGF9RZrwUETluhJxki6zyqBLBJQ8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Exams",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AbhQinJ7x1GA9daHGF9RZrwUETluhJxki6zyqBLBJQ8/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        80,
+        -240
+      ],
+      "id": "60c9edb4-48d3-4b5c-95c8-fd33d747d895",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "WJYfGg3bSG3YytU1",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $('Webhook').first().json.body || $('Webhook').first().json;\nconst wantId = String(body.id || '').trim();\nif (!wantId) {\n  return [{ json: { error: 'missing id' } }];\n}\n\nconst rows = $input.all().map(i => i.json);\nconst row = rows.find(r => String(r.id || '').trim() === wantId);\n\nif (!row) {\n  return [{ json: { error: 'not_found', id: wantId } }];\n}\n\nlet exam;\ntry {\n  exam = typeof row.json === 'string' ? JSON.parse(row.json) : row.json;\n} catch (e) {\n  return [{ json: { error: 'bad_json' } }];\n}\n\nreturn [{\n  json: {\n    title: exam.title || row.title || 'Exam',\n    questions: exam.questions || [],\n    lang: exam.lang || row.lang || 'ar'\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        -240
+      ],
+      "id": "4738f6fe-afe9-46fa-9ccd-80482610b0f3",
+      "name": "Find Exam By ID"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        560,
+        -240
+      ],
+      "id": "e1a2a7d8-3685-45b8-ab23-0339560eafd5",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Find Exam By ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Exam By ID": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "5ccc21c6-94cb-483c-8076-452718b71ce7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d5abfaa60178f35c7bb78ae97b09c035844f7d7ee88e85ec67956532311dfca4"
+  },
+  "nodeGroups": [],
+  "id": "sAClNtCoxTkhWHtW",
+  "tags": []
+}

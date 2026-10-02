@@ -1,0 +1,195 @@
+{
+  "name": "save-exam",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "save-exam",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -208,
+        -288
+      ],
+      "id": "353c322f-38ac-4139-9478-305b4576959d",
+      "name": "Webhook",
+      "webhookId": "1f34623d-63f4-4c34-9935-e6c73841e2d6"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || $input.first().json;\nconst id = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);\nconst title = body.title || 'Exam';\nconst questions = body.questions || [];\nconst lang = body.lang || 'ar';\nconst createdAt = new Date().toISOString();\nconst jsonStr = JSON.stringify({ title, questions, lang });\n\nreturn [{\n  json: {\n    id,\n    title,\n    json: jsonStr,\n    lang,\n    createdAt,\n    teacherName: body.teacherName || '',\n    teacherEmail: body.teacherEmail || ''\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16,
+        -288
+      ],
+      "id": "f1bb2eba-84f8-4d92-803c-ee63f7cea85f",
+      "name": "Prepare Exam Data"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1AbhQinJ7x1GA9daHGF9RZrwUETluhJxki6zyqBLBJQ8",
+          "mode": "list",
+          "cachedResultName": "Exam Maker Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AbhQinJ7x1GA9daHGF9RZrwUETluhJxki6zyqBLBJQ8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Exams",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AbhQinJ7x1GA9daHGF9RZrwUETluhJxki6zyqBLBJQ8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "title": "={{ $json.title }}",
+            "json": "={{ $json.json }}",
+            "lang": "={{ $json.lang }}",
+            "createdAt": "={{ $json.createdAt }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "json",
+              "displayName": "json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lang",
+              "displayName": "lang",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "createdAt",
+              "displayName": "createdAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        240,
+        -288
+      ],
+      "id": "d965f612-83a5-4696-9c2c-f64a9c989aef",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "WJYfGg3bSG3YytU1",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ id: $('Prepare Exam Data').first().json.id }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        464,
+        -288
+      ],
+      "id": "d7c603a0-7551-4ff5-87b3-36b0c190dc41",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Prepare Exam Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Exam Data": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "0707a025-3d6b-4324-a826-03905c6feada",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d5abfaa60178f35c7bb78ae97b09c035844f7d7ee88e85ec67956532311dfca4"
+  },
+  "nodeGroups": [],
+  "id": "AHoezvVNeHjMGbMv",
+  "tags": []
+}

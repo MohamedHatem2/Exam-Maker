@@ -1,0 +1,181 @@
+{
+  "name": "Exam Maker-1",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "exam-generator",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "4cc8fd23-323a-4533-b810-d8ea303cbe9a",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -960,
+        0
+      ],
+      "webhookId": "exam-generator"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Subject: {{ $json.body.subjectLabel }}\nLanguage of output: {{ $json.body.lang === 'ar' ? 'Arabic' : 'English' }}\nNumber of questions: {{ $json.body.count }}\nExam difficulty (selected): {{ $json.body.levels.join(', ') }}\n\nCONTENT:\n\"\"\"\n{{ $json.body.content }}\n\"\"\"",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an expert teacher and exam designer. Write an exam ONLY from the CONTENT provided (never use outside facts).\n\nSTUDENT-LEVEL MIX (fixed, round to whole numbers so the total equals the requested count):\n- 30% level \"weak\": direct recall, definitions, simple true/false.\n- 50% level \"average\": understanding and applying concepts, short problems, fill in the blank.\n- 20% level \"top\": analysis, multi-step reasoning, comparison, application to new situations.\n\nEXAM DIFFICULTY: the selected difficulty (easy / medium / hard) controls how demanding each question is inside its level. easy = clear wording and obvious distractors; medium = balanced; hard = subtle distractors and deeper reasoning. If several are selected, spread them evenly.\n\nQUESTION TYPES: mix \"mcq\" (4 options), \"tf\" (true/false), \"fill\" (fill in the blank), \"short\" (short answer). Do not repeat questions. Each question must have a correct answer and a one-sentence explanation. Order questions from easy to hard.\n\nOUTPUT: return ONLY valid JSON, no markdown, no comments, in the exact language requested:\n{\"title\":\"short exam title\",\"questions\":[{\"type\":\"mcq|tf|fill|short\",\"level\":\"weak|average|top\",\"q\":\"question text\",\"options\":[\"...\"],\"answer\":\"correct answer\",\"explanation\":\"why\"}]}\nFor tf/fill/short use \"options\":[]. For mcq the answer must be the full text of the correct option."
+            }
+          ]
+        }
+      },
+      "id": "56310629-9cdb-42b2-b494-a5f48b7b03e4",
+      "name": "Basic LLM Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        -672,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $('Webhook').first().json.body;\nlet raw = String($input.first().json.text || '').replace(/```json|```/g, '').trim();\nconst s = raw.indexOf('{'), e = raw.lastIndexOf('}');\nconst exam = JSON.parse(raw.slice(s, e + 1));\nconst ar = body.lang === 'ar';\nconst esc = x => String(x ?? '').replace(/[&<>\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));\nconst L = ar ? {weak:'ضعيف',average:'متوسط',top:'متفوق',ans:'الإجابة',why:'التوضيح',hi:'أهلاً',intro:'أسئلتك جاهزة:'} : {weak:'Weak',average:'Average',top:'Advanced',ans:'Answer',why:'Explanation',hi:'Hello',intro:'Your questions are ready:'};\nconst col = {weak:'#d99a1e',average:'#1c7c54',top:'#b4432b'};\nconst items = exam.questions.map((q,i)=>`<div style=\"padding:16px 0;border-top:1px solid #ded8c6\"><div style=\"font-weight:700;font-size:16px;color:#1d2a24\"><span style=\"background:${col[q.level]||'#1c7c54'};color:#fff;border-radius:99px;padding:1px 10px;font-size:12px;margin-${ar?'left':'right'}:8px\">${L[q.level]||''}</span>${i+1}. ${esc(q.q)}</div>${(q.options||[]).map((o,j)=>`<div style=\"color:#677068;padding:2px 12px\">${'ABCD'[j]||j+1}. ${esc(o)}</div>`).join('')}<div style=\"margin-top:8px;padding:8px 12px;border-radius:10px;background:#e3f1ea;color:#1c7c54;font-size:14px\"><b>${L.ans}:</b> ${esc(q.answer)}${q.explanation?`<br><b>${L.why}:</b> ${esc(q.explanation)}`:''}</div></div>`).join('');\nconst html = `<div dir=\"${ar?'rtl':'ltr'}\" style=\"background:#f3efe4;padding:24px;font-family:Tahoma,Arial,sans-serif\"><div style=\"max-width:680px;margin:auto;background:#fffdf7;border:1px solid #ded8c6;border-radius:18px;overflow:hidden\"><div style=\"background:#1c7c54;color:#fff;padding:18px 28px;font-size:18px;font-weight:700\">${ar?'صانع الامتحانات':'Exam Maker'}</div><div style=\"padding:28px\"><h1 style=\"margin:0 0 6px;font-size:24px;color:#1d2a24\">${esc(exam.title)}</h1><p style=\"color:#677068;margin:0 0 16px\">${L.hi} ${esc(body.name)}، ${L.intro}</p>${items}</div></div></div>`;\nreturn [{ json: { exam, html, email: body.email, subject: exam.title || 'Exam' } }];"
+      },
+      "id": "85abda6f-ac73-475a-9063-d75bca2ab7d2",
+      "name": "Build Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($('Build Email').first().json.exam) }}",
+        "options": {}
+      },
+      "id": "d1bcda34-2a4b-4a98-abbc-10af11aa6e60",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -32,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -32,
+        -96
+      ],
+      "id": "13c8ecc7-e126-412b-8e70-57743eda2dbc",
+      "name": "Send a message",
+      "webhookId": "36bdbbb8-dcee-4bb3-8cab-a751eddd6a4a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NjdtdbOrfVRqZDrr",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openrouter/free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        256
+      ],
+      "id": "15e1bb89-a5a1-45f6-a25e-7cb6a797bd3f",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "R3QYyqeSic1cINfR",
+          "name": "exam ai"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Build Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Email": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "4dd72b95-fa01-4661-994a-ab6756c9ef46",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d5abfaa60178f35c7bb78ae97b09c035844f7d7ee88e85ec67956532311dfca4"
+  },
+  "nodeGroups": [],
+  "id": "RUmDVcQ20QpHXIFh",
+  "tags": []
+}

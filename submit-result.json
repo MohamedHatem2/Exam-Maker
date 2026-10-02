@@ -1,0 +1,237 @@
+{
+  "name": "submit-result",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "submit-result",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -560,
+        -192
+      ],
+      "id": "16128fcb-648e-4d3d-85fd-9a0215040a5c",
+      "name": "Webhook",
+      "webhookId": "5fb2aa68-5e2f-473c-80f4-d1d72f6b8212"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || $input.first().json;\nconst ar = (body.lang || 'ar') === 'ar';\nconst esc = x => String(x ?? '').replace(/[&<>\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));\n\nconst name = body.name || '';\nconst email = body.email || '';\nconst score = body.score ?? 0;\nconst total = body.total ?? 0;\nconst percent = body.percent ?? 0;\nconst examTitle = body.examTitle || (ar ? 'امتحان' : 'Exam');\nconst examId = body.examId || '';\nconst results = Array.isArray(body.results) ? body.results : [];\nconst timestamp = new Date().toISOString();\n\nconst L = ar ? {\n  brand: 'صانع الامتحانات',\n  hi: 'أهلاً',\n  result: 'نتيجتك في الامتحان',\n  score: 'الدرجة',\n  of: 'من',\n  pct: 'النسبة',\n  your: 'إجابتك',\n  correct: 'الإجابة الصحيحة',\n  why: 'التوضيح',\n  ok: 'صحيح',\n  bad: 'خطأ',\n  summary: 'ملخص أدائك'\n} : {\n  brand: 'Exam Maker',\n  hi: 'Hello',\n  result: 'Your exam result',\n  score: 'Score',\n  of: 'of',\n  pct: 'Percentage',\n  your: 'Your answer',\n  correct: 'Correct answer',\n  why: 'Explanation',\n  ok: 'Correct',\n  bad: 'Wrong',\n  summary: 'Performance summary'\n};\n\nconst items = results.map((r, i) => {\n  const tagBg = r.correct ? '#d1fae5' : '#fee2e2';\n  const tagColor = r.correct ? '#065f46' : '#991b1b';\n  const tag = r.correct ? L.ok : L.bad;\n  let extra = '';\n  if (!r.correct) {\n    extra += `<div style=\"color:#4b5563;margin-top:4px\"><b>${L.correct}:</b> ${esc(r.correctAnswer)}</div>`;\n  }\n  if (r.explanation) {\n    extra += `<div style=\"margin-top:6px;padding:8px 12px;border-radius:8px;background:#ecfdf5;color:#0f766e;font-size:13px\"><b>${L.why}:</b> ${esc(r.explanation)}</div>`;\n  }\n  return `<div style=\"padding:14px 0;border-top:1px solid #e5e7eb\">\n    <span style=\"display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:${tagBg};color:${tagColor};margin-bottom:6px\">${tag}</span>\n    <div style=\"font-weight:700;font-size:15px;color:#0f172a;margin-bottom:6px\">${i+1}. ${esc(r.q)}</div>\n    <div style=\"color:#4b5563\"><b>${L.your}:</b> ${esc(r.userAnswer) || '—'}</div>\n    ${extra}\n  </div>`;\n}).join('');\n\nconst html = `<div dir=\"${ar?'rtl':'ltr'}\" style=\"background:#0a1018;padding:28px 16px;font-family:Tahoma,Arial,sans-serif\">\n  <div style=\"max-width:640px;margin:auto;background:#111a24;border:1px solid rgba(160,200,240,0.15);border-radius:18px;overflow:hidden\">\n    <div style=\"background:linear-gradient(140deg,#14b8a6,#0d9488);color:#042f2e;padding:18px 28px;font-size:18px;font-weight:700\">${L.brand}</div>\n    <div style=\"padding:28px\">\n      <h1 style=\"margin:0 0 8px;font-size:22px;color:#e8f0f8\">${L.result}</h1>\n      <p style=\"color:#8fa3b8;margin:0 0 20px\">${L.hi} ${esc(name)} — ${esc(examTitle)}</p>\n      <div style=\"text-align:center;margin:20px 0 28px;padding:24px;background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.35);border-radius:16px\">\n        <div style=\"font-size:42px;font-weight:700;color:#2dd4bf;line-height:1\">${score} <span style=\"font-size:18px;color:#8fa3b8\">${L.of} ${total}</span></div>\n        <div style=\"margin-top:8px;font-size:16px;font-weight:600;color:#38bdf8\">${L.pct}: ${percent}%</div>\n      </div>\n      <h2 style=\"font-size:15px;color:#e8f0f8;margin:0 0 8px;border-bottom:1px solid rgba(160,200,240,0.12);padding-bottom:8px\">${L.summary}</h2>\n      <div style=\"background:#f8fafc;border-radius:12px;padding:8px 16px;color:#0f172a\">${items}</div>\n    </div>\n  </div>\n</div>`;\n\nconst subject = ar\n  ? `نتيجتك: ${score}/${total} (${percent}%) — ${examTitle}`\n  : `Your result: ${score}/${total} (${percent}%) — ${examTitle}`;\n\nreturn [{\n  json: {\n    timestamp,\n    examId,\n    name,\n    email,\n    score: String(score),\n    total: String(total),\n    percent: String(percent),\n    html,\n    subject,\n    emailTo: email\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        -192
+      ],
+      "id": "8ad94e85-925a-4ca0-a57f-07a1e2848a3e",
+      "name": "Build Result + Email"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1AbhQinJ7x1GA9daHGF9RZrwUETluhJxki6zyqBLBJQ8",
+          "mode": "list",
+          "cachedResultName": "Exam Maker Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AbhQinJ7x1GA9daHGF9RZrwUETluhJxki6zyqBLBJQ8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 67048919,
+          "mode": "list",
+          "cachedResultName": "Results",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AbhQinJ7x1GA9daHGF9RZrwUETluhJxki6zyqBLBJQ8/edit#gid=67048919"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{ $json.timestamp }}",
+            "examId": "={{ $json.examId }}",
+            "name": "={{ $json.name }}",
+            "email": "={{ $json.email }}",
+            "score": "={{ $json.score }}",
+            "total": "={{ $json.total }}",
+            "percent": "={{ $json.percent }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "examId",
+              "displayName": "examId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "score",
+              "displayName": "score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "total",
+              "displayName": "total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "percent",
+              "displayName": "percent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        160,
+        -368
+      ],
+      "id": "764a1de3-9e9b-4b5b-93b5-a3ae577b19b7",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "WJYfGg3bSG3YytU1",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.emailTo }}",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        160,
+        -16
+      ],
+      "id": "5534845d-924f-4b31-aec3-64b5f1f18a2b",
+      "name": "Send result email",
+      "webhookId": "eb6a4a52-d07a-4c23-ab9a-29e0dcb107e8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NjdtdbOrfVRqZDrr",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        160,
+        -192
+      ],
+      "id": "e71f28f0-91bb-4c48-8524-178bb874b829",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Build Result + Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Result + Email": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send result email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "de978d84-f7e0-4da5-bbc2-d96545fc2828",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d5abfaa60178f35c7bb78ae97b09c035844f7d7ee88e85ec67956532311dfca4"
+  },
+  "nodeGroups": [],
+  "id": "34wVW4ojETJpFFzD",
+  "tags": []
+}

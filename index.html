@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Exam Maker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="bg-stage" aria-hidden="true">
+      <div class="bg-glow"></div>
+      <div class="bg-grid-fine"></div>
+      <div class="bg-grid-coarse"></div>
+      <div class="bg-vignette"></div>
+    </div>
+
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+            <path
+              d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
+            />
+            <path d="M8 7h8M8 11h6" />
+          </svg>
+        </div>
+        <strong data-i="brand"></strong>
+      </div>
+      <div class="controls">
+        <button class="ctrl-btn" id="lang" type="button">EN</button>
+        <button class="ctrl-btn" id="theme" type="button" aria-label="theme">
+          ◐
+        </button>
+      </div>
+    </header>
+
+    <main class="stage">
+      <!-- ========== TEACHER: Screen 1 ========== -->
+      <section id="s1" class="step teacher-only">
+        <div class="card">
+          <div class="card-head">
+            <div class="badge-pill">
+              <span class="dot"></span><span data-i="guide"></span>
+            </div>
+            <h1 data-i="s1t"></h1>
+            <p data-i="s1s"></p>
+          </div>
+          <div class="field">
+            <label data-i="name"></label>
+            <div class="input-wrap">
+              <input id="name" autocomplete="name" required />
+            </div>
+            <span class="error-msg" id="e-name"></span>
+          </div>
+          <div class="field">
+            <label data-i="email"></label>
+            <div class="input-wrap">
+              <input
+                id="email"
+                type="email"
+                dir="ltr"
+                autocomplete="email"
+                required
+              />
+            </div>
+            <span class="error-msg" id="e-email"></span>
+          </div>
+          <button class="primary-btn" id="go1" type="button">
+            <span data-i="next"></span>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- ========== TEACHER: Screen 2 ========== -->
+      <section id="s2" class="step teacher-only" hidden>
+        <div class="card">
+          <div class="card-head">
+            <div class="badge-pill">
+              <span class="dot"></span><span data-i="guide"></span>
+            </div>
+            <h1 data-i="s2t"></h1>
+            <p data-i="s2s"></p>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label data-i="subject"></label>
+              <div class="input-wrap">
+                <select id="subject" required></select>
+              </div>
+              <span class="error-msg" id="e-subject"></span>
+            </div>
+            <div class="field">
+              <label data-i="count"></label>
+              <div class="input-wrap">
+                <select id="count">
+                  <option>10</option>
+                  <option selected>15</option>
+                  <option>20</option>
+                  <option>30</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label data-i="level"></label>
+            <div class="segmented" id="levels">
+              <label class="seg"
+                ><input type="radio" name="level" value="easy" /><span
+                  data-i="easy"
+                ></span
+              ></label>
+              <label class="seg"
+                ><input type="radio" name="level" value="medium" checked /><span
+                  data-i="medium"
+                ></span
+              ></label>
+              <label class="seg"
+                ><input type="radio" name="level" value="hard" /><span
+                  data-i="hard"
+                ></span
+              ></label>
+            </div>
+            <span class="error-msg" id="e-level"></span>
+          </div>
+          <div class="field">
+            <label data-i="content"></label>
+            <div class="input-wrap">
+              <textarea id="content" required></textarea>
+            </div>
+            <small class="hint" data-i="hint"></small>
+            <span class="error-msg" id="e-content"></span>
+          </div>
+          <div class="upload-zone" id="dropzone">
+            <input id="file" type="file" accept=".txt,.pdf,.docx" hidden />
+            <div class="upload-icon" aria-hidden="true">
+              <svg
+                width="36"
+                height="36"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+            </div>
+            <p class="upload-title" data-i="uploadTitle"></p>
+            <p class="upload-sub" data-i="uploadSub"></p>
+            <button
+              class="ghost-btn upload-btn"
+              type="button"
+              id="pickFile"
+              data-i="file"
+            ></button>
+            <span class="file-name" id="fileName"></span>
+            <span class="error-msg" id="e-file"></span>
+          </div>
+          <button class="primary-btn" id="go2" type="button">
+            <span data-i="generate"></span>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- ========== TEACHER: Screen 3 ========== -->
+      <section id="s3" class="step teacher-only" hidden>
+        <div class="card share-card">
+          <div class="card-head compact">
+            <div class="badge-pill success">
+              <span class="dot"></span><span data-i="sent"></span>
+            </div>
+          </div>
+
+          <!-- Share link box -->
+          <div class="share-box" id="shareBox">
+            <label class="share-label" data-i="shareTitle"></label>
+            <p class="share-hint" data-i="shareHint"></p>
+            <div class="share-row">
+              <input id="shareUrl" class="share-input" readonly dir="ltr" />
+              <button
+                class="ghost-btn"
+                id="copyLink"
+                type="button"
+                data-i="copyLink"
+              ></button>
+            </div>
+            <button class="primary-btn" id="createLink" type="button" hidden>
+              <span data-i="createLink"></span>
+            </button>
+            <span class="error-msg" id="e-share"></span>
+          </div>
+
+          <div class="dl-row" style="margin-top: 18px">
+            <button class="ghost-btn dl-btn" data-dl="pdf" type="button">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                />
+                <polyline points="14 2 14 8 20 8" />
+              </svg>
+              <span data-i="dlPdf"></span>
+            </button>
+            <button class="ghost-btn dl-btn" data-dl="doc" type="button">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                />
+                <polyline points="14 2 14 8 20 8" />
+              </svg>
+              <span data-i="dlDoc"></span>
+            </button>
+            <button
+              class="ghost-btn"
+              id="toggleKey"
+              type="button"
+              data-i="toggle"
+            ></button>
+          </div>
+        </div>
+        <div class="card" id="exam-card"><div id="exam"></div></div>
+        <button
+          class="ghost-btn again-btn"
+          id="again"
+          type="button"
+          data-i="again"
+        ></button>
+      </section>
+
+      <!-- ========== STUDENT: Login ========== -->
+      <section id="st-login" class="step student-only" hidden>
+        <div class="card">
+          <div class="card-head">
+            <div class="badge-pill">
+              <span class="dot"></span><span data-i="studentBadge"></span>
+            </div>
+            <h1 id="stExamTitle" data-i="stWelcome"></h1>
+            <p data-i="stIntro"></p>
+          </div>
+          <div class="field">
+            <label data-i="name"></label>
+            <div class="input-wrap">
+              <input id="st-name" autocomplete="name" required />
+            </div>
+            <span class="error-msg" id="e-st-name"></span>
+          </div>
+          <div class="field">
+            <label data-i="email"></label>
+            <div class="input-wrap">
+              <input
+                id="st-email"
+                type="email"
+                dir="ltr"
+                autocomplete="email"
+                required
+              />
+            </div>
+            <span class="error-msg" id="e-st-email"></span>
+          </div>
+          <button class="primary-btn" id="st-start" type="button">
+            <span data-i="startExam"></span>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+            >
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- ========== STUDENT: Quiz ========== -->
+      <section id="st-quiz" class="step student-only" hidden>
+        <div class="card">
+          <div class="quiz-progress">
+            <div class="progress-track">
+              <div class="progress-bar" id="stProgress"></div>
+            </div>
+            <span class="progress-text" id="stProgressText"></span>
+          </div>
+          <div id="stQuestions"></div>
+          <button class="primary-btn" id="st-submit" type="button">
+            <span data-i="submitExam"></span>
+          </button>
+          <span class="error-msg" id="e-st-quiz"></span>
+        </div>
+      </section>
+
+      <!-- ========== STUDENT: Result ========== -->
+      <section id="st-result" class="step student-only" hidden>
+        <div class="card result-card">
+          <div class="card-head">
+            <div class="badge-pill success">
+              <span class="dot"></span><span data-i="resultBadge"></span>
+            </div>
+            <h1 data-i="resultTitle"></h1>
+            <p id="stResultSub"></p>
+          </div>
+          <div class="score-circle" id="scoreCircle">
+            <span class="score-num" id="scoreNum">0</span>
+            <span class="score-total" id="scoreTotal">/0</span>
+          </div>
+          <p class="score-pct" id="scorePct"></p>
+          <p class="result-mail-note" data-i="resultMailNote"></p>
+          <div id="stReview" class="st-review"></div>
+        </div>
+      </section>
+    </main>
+
+    <div id="loader" hidden>
+      <div class="ai-loader">
+        <div class="ai-loader-ring"></div>
+        <div class="ai-loader-ring ring-2"></div>
+        <div class="ai-loader-core">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z" />
+            <path d="M16 14c0 2.2-1.8 4-4 4s-4-1.8-4-4" />
+            <path d="M12 18v3" />
+          </svg>
+        </div>
+      </div>
+      <p class="loader-text" id="loadMsg"></p>
+    </div>
+
+    <dialog id="pop">
+      <h2 id="popT"></h2>
+      <p id="popM"></p>
+      <button class="primary-btn" id="popOk" type="button"></button>
+    </dialog>
+
+    <script src="script.js" defer></script>
+  </body>
+</html>
